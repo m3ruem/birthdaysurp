@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Happy Birthday 🎉</title>
+  <meta name="description" content="A tiny birthday website surprise." />
+  <style>
+    :root{
+      --bg1:#ff9a9e;
+      --bg2:#fad0c4;
+      --accent:#6b5bff;
+      --text:#1a1a1a;
+      --white:#ffffff;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;padding:0;}
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      overflow-x:hidden;
+    }
+    body::before{
+      content:""; position:fixed; inset:-20%;
+      background: radial-gradient(40% 40% at 20% 20%, rgba(255,255,255,.35), transparent 60%),
+                  radial-gradient(40% 40% at 80% 30%, rgba(255,255,255,.35), transparent 60%),
+                  radial-gradient(60% 60% at 50% 80%, rgba(255,255,255,.25), transparent 60%);
+      filter: blur(40px);
+      z-index:-1; animation: floatBg 20s ease-in-out infinite alternate;
+    }
+    @keyframes floatBg{to{transform:translateY(-2rem)}}
+
+    .container{
+      min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding: 20px;
+      text-align:center;
+    }
+
+    .card{
+      width:95%; max-width:400px;
+      background: rgba(255,255,255,.9);
+      backdrop-filter: blur(10px);
+      border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,.12);
+      padding: 20px;
+    }
+
+    .title{
+      font-size: clamp(24px, 8vw, 42px);
+      margin: 0;
+      line-height:1.2;
+    }
+
+    .avatar{
+      width: 140px; height:140px; border-radius: 50%; object-fit: cover; object-position:center;
+      border: 4px solid var(--white);
+      box-shadow: 0 6px 20px rgba(0,0,0,.15);
+      margin: 0 auto 16px; display:block;
+    }
+
+    .cta{margin-top: 16px;}
+    button{
+      font-weight:600; border:none; border-radius: 999px; padding: 12px 24px; cursor:pointer;
+      background: var(--accent); color:white; box-shadow: 0 6px 16px rgba(107,91,255,.35);
+      transition: transform .08s ease, box-shadow .2s ease, opacity .2s ease;
+      width:100%; max-width:260px;
+    }
+    button:hover{transform: translateY(-1px)}
+    button:active{transform: translateY(1px); opacity:.9}
+
+    .balloon{position:fixed; bottom:-120px; width:28px; height:36px; border-radius:50% 50% 45% 45%;
+      background: rgba(255,255,255,.8); box-shadow: inset 0 -5px 10px rgba(0,0,0,.08);
+      animation: rise linear infinite; z-index:0}
+    .balloon::after{content:""; position:absolute; left:50%; top:34px; width:2px; height:50px; background:rgba(0,0,0,.12)}
+    @keyframes rise{to{transform:translateY(-130vh)}}
+
+    #confetti{position:fixed; inset:0; pointer-events:none}
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+  <div class="container">
+    <div class="card">
+      <img class="avatar" alt="Mikay photo" src="/Screenshot 2025-09-02 222506.png" />
+      <h1 class="title">Happy Birthday, Mikay! 🎂</h1>
+      <div class="cta">
+        <button id="confettiBtn">Pinduta ni 🎉</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    for (let i=0;i<15;i++) addBalloon();
+    function addBalloon(){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      const left = Math.random()*100; b.style.left = left + 'vw';
+      const hue = Math.floor(Math.random()*360);
+      b.style.background = `hsl(${hue} 90% 70% / .9)`;
+      b.style.animationDuration = 12 + Math.random()*15 + 's';
+      b.style.animationDelay = -Math.random()*10 + 's';
+      document.body.appendChild(b);
+    }
+
+    const cvs = document.getElementById('confetti');
+    const ctx = cvs.getContext('2d');
+    let W,H; const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    function resize(){ W = cvs.width = innerWidth*DPR; H = cvs.height = innerHeight*DPR; cvs.style.width=innerWidth+'px'; cvs.style.height=innerHeight+'px'; }
+    addEventListener('resize', resize); resize();
+
+    const pieces = [];
+    function spawn(n=100){
+      for (let i=0;i<n;i++){
+        pieces.push({
+          x: Math.random()*W, y: -10, r: 3+Math.random()*5,
+          vx: -2+Math.random()*4, vy: 2+Math.random()*3,
+          rot: Math.random()*Math.PI, vr: (-0.1+Math.random()*0.2),
+          shape: Math.random()<.5?'rect':'tri',
+          color: `hsl(${Math.floor(Math.random()*360)} 90% 60%)`
+        });
+      }
+    }
+    function step(){
+      ctx.clearRect(0,0,W,H);
+      for (const p of pieces){
+        p.vy += 0.02;
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        if (p.shape==='rect') ctx.fillRect(-p.r, -p.r, 2*p.r, 2*p.r);
+        else { ctx.beginPath(); ctx.moveTo(0,-p.r); ctx.lineTo(p.r,p.r); ctx.lineTo(-p.r,p.r); ctx.closePath(); ctx.fill(); }
+        ctx.restore();
+      }
+      for (let i=pieces.length-1;i>=0;i--) if (pieces[i].y>H+40) pieces.splice(i,1);
+      requestAnimationFrame(step);
+    }
+    step();
+
+    setTimeout(()=>spawn(180), 500);
+    document.getElementById('confettiBtn').addEventListener('click', ()=>spawn(150));
+  </script>
+</body>
+</html>
