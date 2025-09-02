@@ -7,8 +7,6 @@
   <meta name="description" content="A tiny birthday website surprise." />
   <style>
     :root{
-      --bg1:#ff9a9e;
-      --bg2:#fad0c4;
       --accent:#6b5bff;
       --text:#1a1a1a;
       --white:#ffffff;
@@ -18,18 +16,17 @@
     body{
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       color:var(--text);
-      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      background: linear-gradient(270deg, #ff9a9e, #fad0c4, #a18cd1, #fbc2eb, #f6d365, #96e6a1);
+      background-size: 1200% 1200%;
+      animation: bgShift 20s ease infinite;
       overflow-x:hidden;
     }
-    body::before{
-      content:""; position:fixed; inset:-20%;
-      background: radial-gradient(40% 40% at 20% 20%, rgba(255,255,255,.35), transparent 60%),
-                  radial-gradient(40% 40% at 80% 30%, rgba(255,255,255,.35), transparent 60%),
-                  radial-gradient(60% 60% at 50% 80%, rgba(255,255,255,.25), transparent 60%);
-      filter: blur(40px);
-      z-index:-1; animation: floatBg 20s ease-in-out infinite alternate;
+
+    @keyframes bgShift {
+      0% {background-position:0% 50%}
+      50% {background-position:100% 50%}
+      100% {background-position:0% 50%}
     }
-    @keyframes floatBg{to{transform:translateY(-2rem)}}
 
     .container{
       min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -43,6 +40,8 @@
       backdrop-filter: blur(10px);
       border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,.12);
       padding: 20px;
+      position:relative;
+      z-index:2;
     }
 
     .title{
@@ -68,13 +67,73 @@
     button:hover{transform: translateY(-1px)}
     button:active{transform: translateY(1px); opacity:.9}
 
-    .balloon{position:fixed; bottom:-120px; width:28px; height:36px; border-radius:50% 50% 45% 45%;
-      background: rgba(255,255,255,.8); box-shadow: inset 0 -5px 10px rgba(0,0,0,.08);
-      animation: rise linear infinite; z-index:0}
-    .balloon::after{content:""; position:absolute; left:50%; top:34px; width:2px; height:50px; background:rgba(0,0,0,.12)}
-    @keyframes rise{to{transform:translateY(-130vh)}}
+    .from{
+      margin-top: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #444;
+    }
 
-    #confetti{position:fixed; inset:0; pointer-events:none}
+    #confetti{position:fixed; inset:0; pointer-events:none; z-index:1}
+
+    /* Floating hearts */
+    .heart{
+      position: fixed;
+      font-size: 20px;
+      opacity: .9;
+      animation: floatUp linear infinite;
+      z-index:0;
+    }
+    @keyframes floatUp{
+      to{transform: translateY(-120vh)}
+    }
+
+    /* Birthday graphics 🎂🎁🎈 */
+    .bday{
+      position: fixed;
+      font-size: 26px;
+      opacity:.85;
+      animation: driftUp linear infinite;
+      z-index:0;
+    }
+    @keyframes driftUp{
+      to{transform: translateY(-130vh)}
+    }
+
+    /* Realistic balloon shapes */
+    .balloon{
+      position: fixed;
+      bottom: -120px;
+      width: 40px;
+      height: 55px;
+      border-radius: 50% 50% 45% 45%;
+      background: red;
+      animation: rise 14s linear infinite;
+      z-index:0;
+    }
+    .balloon::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:55px;
+      width:2px;
+      height:60px;
+      background:rgba(0,0,0,.2);
+    }
+    @keyframes rise {
+      0% {transform:translateY(0) translateX(0)}
+      100% {transform:translateY(-130vh) translateX(var(--dx, 0))}
+    }
+      /* Realistic balloons 🎈 (gradient + string + gentle drift) */
+    .balloon{position:fixed; bottom:-120px; width:38px; height:50px; border-radius:50% 50% 45% 45%;
+      background: radial-gradient(120% 120% at 30% 25%, rgba(255,255,255,.85), rgba(255,255,255,.15) 35%, rgba(0,0,0,.05) 60%, rgba(0,0,0,.0) 70%),
+                  var(--balloon-color, #ffcc66);
+      box-shadow: inset 0 -6px 12px rgba(0,0,0,.08), 0 6px 18px rgba(0,0,0,.12);
+      animation: rise linear infinite, sway 3.6s ease-in-out infinite;
+      z-index:0}
+    .balloon::after{content:""; position:absolute; left:50%; top:50px; width:2px; height:64px; background:rgba(0,0,0,.18)}
+    @keyframes rise{to{transform:translateY(-130vh) translateX(var(--dx, 0))}}
+    @keyframes sway{50%{transform: translateY(var(--y,0)) translateX(calc(var(--dx,0) * .25))}}
   </style>
 </head>
 <body>
@@ -85,23 +144,74 @@
       <h1 class="title">Happy Birthday, Mikay! 🎂</h1>
       <div class="cta">
         <button id="confettiBtn">Pinduta ni 🎉</button>
+        <div class="from">From:<br>~sijey <3</div>
       </div>
     </div>
   </div>
 
   <script>
-    for (let i=0;i<15;i++) addBalloon();
-    function addBalloon(){
+    // Hearts
+    for (let i=0;i<15;i++) addHeart();
+    function addHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = '💖';
+      h.style.left = Math.random()*100 + 'vw';
+      h.style.top = (80+Math.random()*20) + 'vh';
+      h.style.animationDuration = 6 + Math.random()*8 + 's';
+      h.style.animationDelay = -Math.random()*8 + 's';
+      document.body.appendChild(h);
+    }
+
+    // Birthday graphics 🎂🎁🎈
+    const icons = ['🎂','🎁','🎈','🥳'];
+    for (let i=0;i<10;i++) addBday();
+    function addBday(){
       const b = document.createElement('div');
-      b.className = 'balloon';
-      const left = Math.random()*100; b.style.left = left + 'vw';
-      const hue = Math.floor(Math.random()*360);
-      b.style.background = `hsl(${hue} 90% 70% / .9)`;
-      b.style.animationDuration = 12 + Math.random()*15 + 's';
+      b.className = 'bday';
+      b.textContent = icons[Math.floor(Math.random()*icons.length)];
+      b.style.left = Math.random()*100 + 'vw';
+      b.style.top = (80+Math.random()*20) + 'vh';
+      b.style.animationDuration = 8 + Math.random()*10 + 's';
       b.style.animationDelay = -Math.random()*10 + 's';
       document.body.appendChild(b);
     }
 
+    // Realistic balloons 🎈
+    const colors = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#FF6EC7'];
+    for (let i=0;i<10;i++) addBalloon();
+    function addBalloon(){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.left = Math.random()*100 + 'vw';
+      b.style.setProperty('--dx', (Math.random()*40-20)+'px');
+      b.style.background = colors[Math.floor(Math.random()*colors.length)];
+      b.style.animationDuration = (12+Math.random()*8)+'s';
+      b.style.animationDelay = (-Math.random()*8)+'s';
+      document.body.appendChild(b);
+    }
+
+    // Balloons (add 10 colorful balloons)
+    for(let i=0;i<10;i++) addBalloon();
+    function addBalloon(){
+      const b = document.createElement('div');
+      b.className='balloon';
+      const hue = Math.floor(Math.random()*360);
+      const sat = 80 + Math.random()*15;
+      const light = 65 + Math.random()*10;
+      b.style.setProperty('--balloon-color', `hsl(${hue} ${sat}% ${light}%)`);
+      b.style.left = Math.random()*100 + 'vw';
+      b.style.setProperty('--dx', (Math.random()*80-40)+'px');
+      b.style.setProperty('--y', (Math.random()*8-4)+'px');
+      b.style.animationDuration = (14 + Math.random()*12) + 's';
+      b.style.animationDelay = (-Math.random()*12) + 's';
+      // slight size variety
+      const scale = 0.85 + Math.random()*0.5;
+      b.style.transform = `scale(${scale})`;
+      document.body.appendChild(b);
+    }
+
+    // Confetti
     const cvs = document.getElementById('confetti');
     const ctx = cvs.getContext('2d');
     let W,H; const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
